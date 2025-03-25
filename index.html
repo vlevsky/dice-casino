@@ -292,7 +292,7 @@
                 <h3>Bet Amount</h3>
                 <div class="bet-amount">
                     <input type="range" id="betSlider" min="10" max="1000" step="10" value="100">
-                    <div>$<span id="betAmount">100</span></div>
+                    <div>$<input type="number" id="betAmountInput" min="10" max="1000" value="100"></div>
                 </div>
                 <div class="amount-buttons">
                     <button id="halfBtn">½</button>
@@ -335,7 +335,7 @@
         const underBtn = document.getElementById('underBtn');
         const overBtn = document.getElementById('overBtn');
         const betSlider = document.getElementById('betSlider');
-        const betAmountElement = document.getElementById('betAmount');
+        const betAmountInput = document.getElementById('betAmountInput');
         const halfBtn = document.getElementById('halfBtn');
         const doubleBtn = document.getElementById('doubleBtn');
         const allInBtn = document.getElementById('allInBtn');
@@ -362,6 +362,7 @@
             underBtn.addEventListener('click', () => setBetDirection(false));
             overBtn.addEventListener('click', () => setBetDirection(true));
             betSlider.addEventListener('input', updateBetFromSlider);
+            betAmountInput.addEventListener('input', updateBetFromInput);
             halfBtn.addEventListener('click', () => adjustBet(0.5));
             doubleBtn.addEventListener('click', () => adjustBet(2));
             allInBtn.addEventListener('click', goAllIn);
@@ -373,8 +374,11 @@
         function updateBalance() {
             balanceElement.textContent = balance.toFixed(2);
             
-            // Update max bet slider
-            betSlider.max = Math.min(1000, balance);
+            // Update max bet slider and input
+            const maxBet = Math.min(1000, balance);
+            betSlider.max = maxBet;
+            betAmountInput.max = maxBet;
+            
             if (betAmount > balance) {
                 betAmount = balance;
                 updateBetAmount();
@@ -433,21 +437,38 @@
             updateBetAmount();
         }
         
+        // Update bet amount from input
+        function updateBetFromInput() {
+            let value = parseInt(betAmountInput.value);
+            
+            if (isNaN(value)) {
+                value = 10;
+            } else if (value < 10) {
+                value = 10;
+            } else if (value > Math.min(1000, balance)) {
+                value = Math.min(1000, balance);
+            }
+            
+            betAmount = value;
+            betAmountInput.value = value;
+            betSlider.value = value;
+        }
+        
         // Update bet amount display
         function updateBetAmount() {
-            betAmountElement.textContent = betAmount.toFixed(2);
+            betAmountInput.value = betAmount;
             betSlider.value = betAmount;
         }
         
         // Adjust bet by multiplier
         function adjustBet(multiplier) {
-            betAmount = Math.min(balance, Math.max(10, Math.floor(betAmount * multiplier)));
+            betAmount = Math.min(Math.min(1000, balance), Math.max(10, Math.floor(betAmount * multiplier)));
             updateBetAmount();
         }
         
         // Go all in
         function goAllIn() {
-            betAmount = balance;
+            betAmount = Math.min(1000, balance);
             updateBetAmount();
         }
         
@@ -514,7 +535,8 @@
                 const win = isOver ? result > selectedNumber : result < selectedNumber;
                 
                 if (win) {
-                    let winAmount = betAmount * parseFloat(payoutElement.textContent);
+                    const payout = parseFloat(payoutElement.textContent);
+                    const winAmount = betAmount * payout;
                     balance += winAmount;
                     resultElement.textContent = `WIN! +$${winAmount.toFixed(2)}`;
                     resultElement.className = 'result win';
