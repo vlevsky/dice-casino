@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Casino - Over/Under</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a2a3a;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #2a3a4a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            color: #f8d347;
+            margin-bottom: 10px;
+        }
+        
+        .balance {
+            font-size: 36px;
+            margin-bottom: 20px;
+            background-color: #3a4a5a;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .balance span {
+            color: #f8d347;
+        }
+        
+        .number-line {
+            height: 60px;
+            background: linear-gradient(to right, #e74c3c, #f8d347, #2ecc71);
+            border-radius: 30px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .marker {
+            position: absolute;
+            top: -10px;
+            width: 4px;
+            height: 80px;
+            background-color: white;
+            transform: translateX(-50%);
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background-color: #3a4a5a;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 200px;
+        }
+        
+        .control-group h3 {
+            margin-top: 0;
+            color: #f8d347;
+        }
+        
+        input[type="number"] {
+            width: 80px;
+            padding: 10px;
+            font-size: 18px;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .bet-direction {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .bet-direction button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .bet-direction button.selected {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(248, 211, 71, 0.7);
+        }
+        
+        .under-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .over-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .bet-amount {
+            margin-bottom: 15px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .amount-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .amount-buttons button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #4a5a6a;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .amount-buttons button:hover {
+            background-color: #5a6a7a;
+        }
+        
+        .all-in {
+            background-color: #f8d347 !important;
+            color: #1a2a3a !important;
+            font-weight: bold;
+        }
+        
+        .top-up {
+            background-color: #9b59b6 !important;
+        }
+        
+        .roll-section {
+            margin: 30px 0;
+        }
+        
+        .roll-btn {
+            padding: 20px 60px;
+            font-size: 24px;
+            background-color: #f8d347;
+            color: #1a2a3a;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .roll-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(248, 211, 71, 0.7);
+        }
+        
+        .roll-btn:disabled {
+            background-color: #4a5a6a;
+            color: #7a8a9a;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .odds-display {
+            font-size: 18px;
+            margin: 15px 0;
+        }
+        
+        .odds-display span {
+            color: #f8d347;
+            font-weight: bold;
+        }
+        
+        .result {
+            font-size: 24px;
+            min-height: 36px;
+            margin: 20px 0;
+        }
+        
+        .win {
+            color: #2ecc71;
+        }
+        
+        .lose {
+            color: #e74c3c;
+        }
+        
+        .dice-animation {
+            font-size: 60px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .rolling {
+            animation: roll 0.5s infinite;
+        }
+        
+        .history {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #3a4a5a;
+            border-radius: 8px;
+        }
+        
+        .history h3 {
+            margin-top: 0;
+            color: #f8d347;
+        }
+        
+        .history-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .history-item {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .history-win {
+            background-color: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+        }
+        
+        .history-lose {
+            background-color: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dice Casino - Over/Under</h1>
+        
+        <div class="balance">BALANCE: $<span id="balance">1000</span></div>
+        
+        <div class="number-line" id="numberLine">
+            <div class="marker" id="selectedNumberMarker"></div>
+            <div class="marker" id="resultMarker" style="background-color: black; display: none;"></div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3>Select Number</h3>
+                <input type="number" id="selectedNumber" min="1" max="99" value="50">
+                <div class="bet-direction">
+                    <button class="under-btn" id="underBtn">UNDER</button>
+                    <button class="over-btn" id="overBtn">OVER</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Bet Amount</h3>
+                <div class="bet-amount">
+                    <input type="range" id="betSlider" min="10" max="1000" step="10" value="100">
+                    <div>$<span id="betAmount">100</span></div>
+                </div>
+                <div class="amount-buttons">
+                    <button id="halfBtn">½</button>
+                    <button id="doubleBtn">2×</button>
+                    <button class="all-in" id="allInBtn">ALL IN</button>
+                    <button class="top-up" id="topUpBtn">TOP UP</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="odds-display">
+            Payout: <span id="payout">1.98x</span> | Win Chance: <span id="winChance">49.50%</span>
+        </div>
+        
+        <div class="roll-section">
+            <button class="roll-btn" id="rollBtn">ROLL DICE</button>
+        </div>
+        
+        <div class="dice-animation" id="diceAnimation"></div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="history">
+            <h3>History</h3>
+            <div class="history-items" id="historyItems"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let balance = 1000;
+        let selectedNumber = 50;
+        let betAmount = 100;
+        let isOver = false;
+        let gameInProgress = false;
+        
+        // DOM elements
+        const balanceElement = document.getElementById('balance');
+        const selectedNumberInput = document.getElementById('selectedNumber');
+        const underBtn = document.getElementById('underBtn');
+        const overBtn = document.getElementById('overBtn');
+        const betSlider = document.getElementById('betSlider');
+        const betAmountElement = document.getElementById('betAmount');
+        const halfBtn = document.getElementById('halfBtn');
+        const doubleBtn = document.getElementById('doubleBtn');
+        const allInBtn = document.getElementById('allInBtn');
+        const topUpBtn = document.getElementById('topUpBtn');
+        const rollBtn = document.getElementById('rollBtn');
+        const payoutElement = document.getElementById('payout');
+        const winChanceElement = document.getElementById('winChance');
+        const diceAnimationElement = document.getElementById('diceAnimation');
+        const resultElement = document.getElementById('result');
+        const historyItemsElement = document.getElementById('historyItems');
+        const selectedNumberMarker = document.getElementById('selectedNumberMarker');
+        const resultMarker = document.getElementById('resultMarker');
+        const numberLine = document.getElementById('numberLine');
+        
+        // Initialize the game
+        function init() {
+            updateBalance();
+            updateSelectedNumberMarker();
+            updateBetAmount();
+            updateOdds();
+            
+            // Event listeners
+            selectedNumberInput.addEventListener('input', handleNumberChange);
+            underBtn.addEventListener('click', () => setBetDirection(false));
+            overBtn.addEventListener('click', () => setBetDirection(true));
+            betSlider.addEventListener('input', updateBetFromSlider);
+            halfBtn.addEventListener('click', () => adjustBet(0.5));
+            doubleBtn.addEventListener('click', () => adjustBet(2));
+            allInBtn.addEventListener('click', goAllIn);
+            topUpBtn.addEventListener('click', topUp);
+            rollBtn.addEventListener('click', rollDice);
+        }
+        
+        // Update balance display
+        function updateBalance() {
+            balanceElement.textContent = balance.toFixed(2);
+            
+            // Update max bet slider
+            betSlider.max = Math.min(1000, balance);
+            if (betAmount > balance) {
+                betAmount = balance;
+                updateBetAmount();
+            }
+        }
+        
+        // Update the selected number marker position
+        function updateSelectedNumberMarker() {
+            const position = (selectedNumber / 100) * 100;
+            selectedNumberMarker.style.left = `${position}%`;
+        }
+        
+        // Update the result marker position
+        function updateResultMarker(result) {
+            const position = (result / 100) * 100;
+            resultMarker.style.left = `${position}%`;
+            resultMarker.style.display = 'block';
+        }
+        
+        // Handle number change
+        function handleNumberChange() {
+            let value = parseInt(selectedNumberInput.value);
+            
+            if (isNaN(value)) {
+                value = 50;
+            } else if (value < 1) {
+                value = 1;
+            } else if (value > 99) {
+                value = 99;
+            }
+            
+            selectedNumber = value;
+            selectedNumberInput.value = value;
+            updateSelectedNumberMarker();
+            updateOdds();
+        }
+        
+        // Set bet direction (over/under)
+        function setBetDirection(over) {
+            isOver = over;
+            
+            if (over) {
+                overBtn.classList.add('selected');
+                underBtn.classList.remove('selected');
+            } else {
+                underBtn.classList.add('selected');
+                overBtn.classList.remove('selected');
+            }
+            
+            updateOdds();
+        }
+        
+        // Update bet amount from slider
+        function updateBetFromSlider() {
+            betAmount = parseInt(betSlider.value);
+            updateBetAmount();
+        }
+        
+        // Update bet amount display
+        function updateBetAmount() {
+            betAmountElement.textContent = betAmount.toFixed(2);
+            betSlider.value = betAmount;
+        }
+        
+        // Adjust bet by multiplier
+        function adjustBet(multiplier) {
+            betAmount = Math.min(balance, Math.max(10, Math.floor(betAmount * multiplier)));
+            updateBetAmount();
+        }
+        
+        // Go all in
+        function goAllIn() {
+            betAmount = balance;
+            updateBetAmount();
+        }
+        
+        // Top up balance
+        function topUp() {
+            if (balance < 1000) {
+                balance = 1000;
+                updateBalance();
+                updateBetAmount();
+                addHistoryItem("Balance topped up to $1000", "neutral");
+            }
+        }
+        
+        // Calculate and update odds
+        function updateOdds() {
+            let winProbability, payout;
+            
+            if (isOver) {
+                winProbability = (100 - selectedNumber) / 100;
+            } else {
+                winProbability = (selectedNumber - 1) / 100;
+            }
+            
+            // House edge of 1%
+            payout = (0.99 / winProbability);
+            
+            winChanceElement.textContent = `${(winProbability * 100).toFixed(2)}%`;
+            payoutElement.textContent = `${payout.toFixed(2)}x`;
+        }
+        
+        // Roll the dice
+        function rollDice() {
+            if (gameInProgress) return;
+            
+            if (betAmount < 10) {
+                alert("Minimum bet is $10");
+                return;
+            }
+            
+            if (betAmount > balance) {
+                alert("You don't have enough balance");
+                return;
+            }
+            
+            gameInProgress = true;
+            rollBtn.disabled = true;
+            balance -= betAmount;
+            updateBalance();
+            
+            // Show rolling animation
+            diceAnimationElement.textContent = "🎲";
+            diceAnimationElement.classList.add('rolling');
+            resultMarker.style.display = 'none';
+            resultElement.textContent = '';
+            
+            // Determine result after animation
+            setTimeout(() => {
+                const result = Math.floor(Math.random() * 100) + 1; // 1-100
+                updateResultMarker(result);
+                
+                diceAnimationElement.classList.remove('rolling');
+                diceAnimationElement.textContent = result;
+                
+                const win = isOver ? result > selectedNumber : result < selectedNumber;
+                
+                if (win) {
+                    let winAmount = betAmount * parseFloat(payoutElement.textContent);
+                    balance += winAmount;
+                    resultElement.textContent = `WIN! +$${winAmount.toFixed(2)}`;
+                    resultElement.className = 'result win';
+                    addHistoryItem(`Won $${winAmount.toFixed(2)} (Rolled ${result} ${isOver ? '>' : '<'} ${selectedNumber})`, "win");
+                } else {
+                    resultElement.textContent = `LOSE! -$${betAmount.toFixed(2)}`;
+                    resultElement.className = 'result lose';
+                    addHistoryItem(`Lost $${betAmount.toFixed(2)} (Rolled ${result} ${isOver ? '<=' : '>='} ${selectedNumber})`, "lose");
+                }
+                
+                updateBalance();
+                gameInProgress = false;
+                rollBtn.disabled = false;
+                
+                // Auto top-up if balance is zero
+                if (balance < 10) {
+                    setTimeout(topUp, 1000);
+                }
+            }, 2000);
+        }
+        
+        // Add item to history
+        function addHistoryItem(text, type) {
+            const item = document.createElement('div');
+            item.className = `history-item history-${type}`;
+            item.textContent = text;
+            historyItemsElement.prepend(item);
+            
+            // Limit history to 10 items
+            if (historyItemsElement.children.length > 10) {
+                historyItemsElement.removeChild(historyItemsElement.lastChild);
+            }
+        }
+        
+        // Initialize the game
+        init();
+        setBetDirection(false); // Default to UNDER
+    </script>
+</body>
+</html>
